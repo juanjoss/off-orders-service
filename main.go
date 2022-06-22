@@ -10,18 +10,8 @@ import (
 )
 
 func main() {
-	// repositories
 	pr := repository.NewProductRepository()
-	ur := repository.NewUserRepository()
-
-	// services
 	ps := services.NewProductService(pr)
-	us := services.NewUserService(ur)
-
-	// handlers
 	ph := handlers.NewProductHandlers(ps)
-	uh := handlers.NewUserHandlers(us)
-
-	// server
-	server.NewServer(ph, uh).ListenAndServe(":" + os.Getenv("SERVICE_PORT"))
+	server.NewServer(ph).ListenAndServe(":" + os.Getenv("SERVICE_PORT"))
 }

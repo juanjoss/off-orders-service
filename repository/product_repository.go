@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/juanjoss/off-orders-service/model"
+	"github.com/juanjoss/off-orders-service/ports"
 	_ "github.com/lib/pq"
 )
 
@@ -40,69 +40,70 @@ func NewProductRepository() *ProductRepository {
 /*
 	Returns all products.
 */
-func (pr *ProductRepository) GetAll() ([]*model.Product, error) {
-	products := []*model.Product{}
+func (pr *ProductRepository) GetAllProducts() (ports.GetAllProductsResponse, error) {
+	response := ports.GetAllProductsResponse{}
 
-	err := pr.db.Select(&products, `SELECT * FROM products`)
+	err := pr.db.Select(&response.Products, `SELECT * FROM products`)
 	if err != nil {
-		return products, err
+		return response, err
 	}
 
-	return products, nil
+	return response, nil
 }
 
 /*
 	Returns a random product from a user's ssd.
 */
-func (pr *ProductRepository) GetRandomProductFromUserSsd() (int, int, string, error) {
-	var userId, ssdId int
-	var barcode string
+func (pr *ProductRepository) GetRandomProductFromUserSsd() (ports.GetRandomProductFromUserSsdResponse, error) {
+	response := ports.GetRandomProductFromUserSsdResponse{}
 
 	rows, err := pr.db.Query(`
-		SELECT users.id AS userId, ssds.id AS ssdId, product_ssds.barcode AS barcode
+		SELECT ssds.id AS ssdId, product_ssds.barcode AS barcode
 		FROM (users JOIN ssds ON users.id = ssds.id) JOIN product_ssds ON ssds.id = product_ssds.ssd_id
 		ORDER BY RANDOM() 
 		LIMIT 1
 	`)
 	if err != nil {
-		return userId, ssdId, barcode, err
+		return response, err
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&userId, &ssdId, &barcode)
+		err = rows.Scan(&response.SsdId, &response.Barcode)
 		if err != nil {
-			return userId, ssdId, barcode, err
+			return response, err
 		}
 	}
 	if err = rows.Err(); err != nil {
-		return userId, ssdId, barcode, err
+		return response, err
 	}
 
-	return userId, ssdId, barcode, nil
+	return response, nil
 }
 
 /*
 	Returns a random product.
 */
-func (pr *ProductRepository) Random() (*model.Product, error) {
-	product := &model.Product{}
+func (pr *ProductRepository) GetRandomProduct() (ports.GetRandomProductResponse, error) {
+	product := ports.GetRandomProductResponse{}
 
-	rows, err := pr.db.Queryx(
-		`SELECT * FROM products ORDER BY RANDOM() LIMIT 1`,
-	)
-	if err != nil {
-		return product, err
-	}
-
-	for rows.Next() {
-		err = rows.StructScan(product)
-		if err != nil {
-			return product, err
-		}
-	}
-	if err = rows.Err(); err != nil {
-		return product, err
-	}
+	pr.db.Get(&product, `SELECT * FROM products ORDER BY RANDOM() LIMIT 1`)
 
 	return product, nil
+}
+
+/*
+	Creates a product order.
+*/
+func (pr *ProductRepository) CreateProductOrder(request ports.CreateProductOrderRequest) error {
+	_, err := pr.db.Exec(
+		`INSERT INTO product_orders (ssd_id, barcode, timestamp, quantity, status) 
+		VALUES ($1, $2, NOW(), $3, $4)
+		ON CONFLICT DO NOTHING`,
+		request.SsdId, request.Barcode, request.Quantity, request.Status,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

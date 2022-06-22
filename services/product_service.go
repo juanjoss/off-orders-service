@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/juanjoss/off-orders-service/model"
 	"github.com/juanjoss/off-orders-service/ports"
 )
 
@@ -15,29 +14,40 @@ func NewProductService(repo ports.ProductRepository) *ProductService {
 	}
 }
 
-func (ps *ProductService) GetAll() ([]*model.Product, error) {
-	products, err := ps.repo.GetAll()
+func (ps *ProductService) GetAllProducts() (ports.GetAllProductsResponse, error) {
+	response, err := ps.repo.GetAllProducts()
 	if err != nil {
-		return products, err
+		return response, err
 	}
 
-	return products, nil
+	return response, nil
 }
 
-func (ps *ProductService) GetRandomProductFromUserSsd() (int, int, string, error) {
-	userId, ssdId, barcode, err := ps.repo.GetRandomProductFromUserSsd()
+func (ps *ProductService) GetRandomProductFromUserSsd() (ports.GetRandomProductFromUserSsdResponse, error) {
+	response, err := ps.repo.GetRandomProductFromUserSsd()
 	if err != nil {
-		return userId, ssdId, barcode, err
+		return response, err
 	}
 
-	return userId, ssdId, barcode, nil
+	return response, nil
 }
 
-func (ph *ProductService) Random() (*model.Product, error) {
-	product, err := ph.repo.Random()
+func (ph *ProductService) GetRandomProduct() (ports.GetRandomProductResponse, error) {
+	response, err := ph.repo.GetRandomProduct()
 	if err != nil {
-		return product, err
+		return response, err
 	}
 
-	return product, nil
+	return response, nil
+}
+
+func (ph *ProductService) CreateProductOrder(request ports.CreateProductOrderRequest) error {
+	request.Status = "pending"
+
+	err := ph.repo.CreateProductOrder(request)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

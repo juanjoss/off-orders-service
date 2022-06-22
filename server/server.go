@@ -8,32 +8,28 @@ import (
 	"github.com/juanjoss/off-orders-service/ports"
 )
 
-const apiPrefix = "/api/"
+const apiPrefix = "/api/products"
 
 type Server struct {
 	productHandlers ports.ProductHandlers
-	userHandlers    ports.UserHandlers
 	router          *mux.Router
 }
 
-func NewServer(ph ports.ProductHandlers, uh ports.UserHandlers) *Server {
+func NewServer(ph ports.ProductHandlers) *Server {
 	return &Server{
 		productHandlers: ph,
-		userHandlers:    uh,
 		router:          mux.NewRouter().PathPrefix(apiPrefix).Subrouter(),
 	}
 }
 
 func (s *Server) RegisterRoutes() {
-	// users
-	s.router.HandleFunc("/register", s.userHandlers.Register).Methods(http.MethodPost)
-	s.router.HandleFunc("/users/ssds/products", s.userHandlers.AddProductToSSD).Methods(http.MethodPost)
-	s.router.HandleFunc("/users/ssds/random", s.userHandlers.RandomSSD).Methods(http.MethodGet)
-
 	// products
-	s.router.HandleFunc("/products", s.productHandlers.GetAll).Methods(http.MethodGet)
-	s.router.HandleFunc("/products/randomProductFromUserSSD", s.productHandlers.GetRandomProductFromUserSsd).Methods(http.MethodGet)
-	s.router.HandleFunc("/products/random", s.productHandlers.Random).Methods(http.MethodGet)
+	s.router.HandleFunc("", s.productHandlers.GetAllProducts).Methods(http.MethodGet)
+	s.router.HandleFunc("/randomProductFromUserSSD", s.productHandlers.GetRandomProductFromUserSsd).Methods(http.MethodGet)
+	s.router.HandleFunc("/random", s.productHandlers.GetRandomProduct).Methods(http.MethodGet)
+
+	// orders
+	s.router.HandleFunc("/orders", s.productHandlers.CreateProductOrder).Methods(http.MethodPost)
 }
 
 func (s *Server) ListenAndServe(addr string) {
