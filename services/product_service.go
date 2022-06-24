@@ -42,8 +42,6 @@ func (ph *ProductService) GetRandomProduct() (ports.GetRandomProductResponse, er
 }
 
 func (ph *ProductService) CreateProductOrder(request ports.CreateProductOrderRequest) error {
-	request.Status = "pending"
-
 	err := ph.repo.CreateProductOrder(request)
 	if err != nil {
 		return err

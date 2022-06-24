@@ -33,7 +33,6 @@ func (ph *ProductHandlers) GetAllProducts(w http.ResponseWriter, r *http.Request
 func (ph *ProductHandlers) GetRandomProductFromUserSsd(w http.ResponseWriter, r *http.Request) {
 	response, err := ph.productService.GetRandomProductFromUserSsd()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -46,7 +45,6 @@ func (ph *ProductHandlers) GetRandomProductFromUserSsd(w http.ResponseWriter, r 
 func (ph *ProductHandlers) GetRandomProduct(w http.ResponseWriter, r *http.Request) {
 	response, err := ph.productService.GetRandomProduct()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -61,20 +59,17 @@ func (ph *ProductHandlers) CreateProductOrder(w http.ResponseWriter, r *http.Req
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := json.Unmarshal(body, &request); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = ph.productService.CreateProductOrder(request)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -84,11 +84,14 @@ func (pr *ProductRepository) GetRandomProductFromUserSsd() (ports.GetRandomProdu
 	Returns a random product.
 */
 func (pr *ProductRepository) GetRandomProduct() (ports.GetRandomProductResponse, error) {
-	product := ports.GetRandomProductResponse{}
+	response := ports.GetRandomProductResponse{}
 
-	pr.db.Get(&product, `SELECT * FROM products ORDER BY RANDOM() LIMIT 1`)
+	err := pr.db.Get(&response, `SELECT * FROM products ORDER BY RANDOM() LIMIT 1`)
+	if err != nil {
+		return response, err
+	}
 
-	return product, nil
+	return response, nil
 }
 
 /*
@@ -97,9 +100,9 @@ func (pr *ProductRepository) GetRandomProduct() (ports.GetRandomProductResponse,
 func (pr *ProductRepository) CreateProductOrder(request ports.CreateProductOrderRequest) error {
 	_, err := pr.db.Exec(
 		`INSERT INTO product_orders (ssd_id, barcode, timestamp, quantity, status) 
-		VALUES ($1, $2, NOW(), $3, $4)
+		VALUES ($1, $2, NOW(), $3, 'pending')
 		ON CONFLICT DO NOTHING`,
-		request.SsdId, request.Barcode, request.Quantity, request.Status,
+		request.SsdId, request.Barcode, request.Quantity,
 	)
 	if err != nil {
 		return err

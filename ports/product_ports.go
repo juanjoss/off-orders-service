@@ -50,5 +50,4 @@ type CreateProductOrderRequest struct {
 	SsdId    int    `json:"ssd_id"`
 	Barcode  string `json:"barcode"`
 	Quantity int    `json:"quantity"`
-	Status   string `json:"status"`
 }
