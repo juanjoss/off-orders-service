@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/juanjoss/off-orders-service/ports"
@@ -57,16 +56,22 @@ func (ph *ProductHandlers) GetRandomProduct(w http.ResponseWriter, r *http.Reque
 func (ph *ProductHandlers) CreateProductOrder(w http.ResponseWriter, r *http.Request) {
 	var request ports.CreateProductOrderRequest
 
-	body, err := ioutil.ReadAll(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := json.Unmarshal(body, &request); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// body, err := ioutil.ReadAll(r.Body)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// if err := json.Unmarshal(body, &request); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
 	err = ph.productService.CreateProductOrder(request)
 	if err != nil {
